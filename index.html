@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Whisper Network — Grand Army Gazette</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --text: #1a1a1a; --text-secondary: #6b6b6b;
+      --bg: #faf9f7; --bg-secondary: #f3f1ee;
+      --border: #d4d0ca; --border-light: #e8e5e0;
+      --red: #c0392b; --radius: 6px;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    body { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
+    .page { width: 100%; max-width: 640px; }
+
+    .masthead { border-top: 3px solid var(--text); border-bottom: 1px solid var(--border-light); padding: 12px 0 16px; margin-bottom: 1.5rem; text-align: center; }
+    .masthead-eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+    .masthead-title { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+    .masthead-sub { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 14px; color: var(--text-secondary); margin-top: 5px; }
+
+    .gate { text-align: center; padding: 3rem 1rem; }
+    .gate-hint { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; color: var(--text-secondary); margin-bottom: 1.75rem; line-height: 1.7; }
+    .gate-row { display: flex; gap: 8px; max-width: 360px; margin: 0 auto; }
+    .gate-row input { font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 10px 14px; border: 0.5px solid var(--border); border-radius: var(--radius); background: white; color: #1a1a1a !important; -webkit-text-fill-color: #1a1a1a !important; flex: 1; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
+    .gate-row input:focus { outline: none; border-color: var(--text); }
+    .gate-row input::placeholder { color: #aaa; -webkit-text-fill-color: #aaa; }
+    .gate-btn { padding: 10px 20px; background: var(--text); color: white; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+    .gate-btn:hover { opacity: 0.8; }
+    .gate-error { font-size: 12px; color: var(--red); margin-top: 10px; min-height: 16px; }
+
+    .main-tabs { display: flex; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.75rem; }
+    .main-tab { flex: 1; padding: 11px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; text-align: center; cursor: pointer; border: none; background: var(--bg-secondary); color: var(--text-secondary); border-right: 0.5px solid var(--border-light); transition: all 0.12s; }
+    .main-tab:last-child { border-right: none; }
+    .main-tab:hover { background: white; color: var(--text); }
+    .main-tab.active { background: var(--text); color: white; }
+
+    .disclaimer { font-size: 12px; color: var(--text-secondary); border-left: 2px solid var(--border); padding: 6px 12px; margin-bottom: 2rem; line-height: 1.6; }
+    .section-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); font-weight: 500; margin-bottom: 1rem; padding-bottom: 6px; border-bottom: 0.5px solid var(--border-light); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+    .field label .req { color: var(--red); margin-left: 2px; }
+    .field input, .field select, .field textarea { font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 9px 11px; border: 0.5px solid var(--border); border-radius: var(--radius); background: white; color: var(--text); width: 100%; transition: border-color 0.15s; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 2px rgba(0,0,0,0.06); }
+    .field textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+
+    .month-tabs { display: grid; grid-template-columns: repeat(4, 1fr); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+    .month-tab { padding: 9px 4px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; text-align: center; cursor: pointer; border: none; background: var(--bg-secondary); color: var(--text-secondary); border-right: 0.5px solid var(--border-light); border-bottom: 0.5px solid var(--border-light); transition: all 0.12s; }
+    .month-tab:nth-child(4n) { border-right: none; }
+    .month-tab:nth-child(n+9) { border-bottom: none; }
+    .month-tab:hover { background: white; color: var(--text); }
+    .month-tab.active { background: var(--text); color: white; }
+
+    .radio-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-chip { display: flex; align-items: center; gap: 6px; padding: 7px 13px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); transition: all 0.12s; user-select: none; }
+    .radio-chip input { display: none; }
+    .radio-chip.selected { background: var(--text); color: white; border-color: var(--text); }
+
+    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 14px; }
+    .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--text); }
+    .check-item input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--text); flex-shrink: 0; }
+
+    .divider { border: none; border-top: 0.5px solid var(--border-light); margin: 1.75rem 0; }
+    .form-section { margin-bottom: 1.5rem; }
+
+    .submit-btn { width: 100%; padding: 13px; background: var(--text); color: white; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 1.5rem; letter-spacing: 0.02em; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.82; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg { font-size: 12px; color: var(--red); margin-top: 1rem; display: none; }
+
+    .success-msg { display: none; text-align: center; padding: 3rem 1rem; border: 0.5px solid var(--border-light); border-radius: 10px; }
+    .success-msg p { font-family: 'Playfair Display', serif; font-style: italic; font-size: 17px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* BROWSER */
+    .filter-months { display: grid; grid-template-columns: repeat(3, 1fr); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+    .filter-tab { padding: 9px 4px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; text-align: center; cursor: pointer; border: none; background: var(--bg-secondary); color: var(--text-secondary); border-right: 0.5px solid var(--border-light); border-bottom: 0.5px solid var(--border-light); transition: all 0.12s; }
+    .filter-tab:nth-child(3n) { border-right: none; }
+    .filter-tab:nth-child(n+10) { border-bottom: none; }
+    .filter-tab:hover { background: white; color: var(--text); }
+    .filter-tab.active { background: var(--text); color: white; }
+
+    .listings-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .listings-count { font-size: 12px; color: var(--text-secondary); }
+    .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-secondary); background: none; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 5px 12px; cursor: pointer; transition: all 0.12s; }
+    .refresh-btn:hover { background: var(--bg-secondary); color: var(--text); }
+
+    .listing-card { border: 0.5px solid var(--border-light); border-radius: 8px; padding: 1.1rem 1.25rem; margin-bottom: 12px; background: white; transition: border-color 0.12s; }
+    .listing-card:hover { border-color: var(--border); }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 12px; }
+    .card-address { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; line-height: 1.3; }
+    .card-neighborhood { font-size: 11px; color: var(--text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .card-rent { font-size: 18px; font-weight: 600; white-space: nowrap; }
+    .card-meta { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .card-pill { font-size: 11px; padding: 3px 9px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-secondary); white-space: nowrap; }
+    .card-pill.type { background: #f0ebe3; color: #7a6a55; }
+    .card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 10px; }
+    .card-amenities { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .amenity-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--bg-secondary); color: var(--text-secondary); }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 0.5px solid var(--border-light); flex-wrap: wrap; gap: 6px; }
+    .card-contact { font-size: 12px; color: var(--text-secondary); }
+    .card-contact strong { color: var(--text); font-weight: 500; }
+    .card-month-badge { font-size: 11px; color: var(--text-secondary); background: var(--bg-secondary); padding: 3px 9px; border-radius: 12px; }
+
+    .no-listings { text-align: center; padding: 3rem 1rem; }
+    .no-listings p { font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
+    .loading { text-align: center; padding: 2rem; font-size: 13px; color: var(--text-secondary); font-style: italic; }
+
+    /* PHOTO UPLOAD */
+    .photo-upload-area { border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; background: white; }
+    .photo-upload-area:hover { border-color: var(--text); background: var(--bg-secondary); }
+    .photo-upload-area input[type="file"] { display: none; }
+    .photo-upload-label { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .photo-upload-label strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 14px; }
+    .photo-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .photo-preview-wrap { position: relative; width: 80px; height: 80px; }
+    .photo-preview-wrap img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 0.5px solid var(--border-light); }
+    .photo-remove { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .photo-uploading { font-size: 12px; color: var(--text-secondary); margin-top: 8px; font-style: italic; display: none; }
+
+    /* CARD PHOTOS */
+    .card-photos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .card-photos img { width: 120px; height: 90px; object-fit: cover; border-radius: 4px; border: 0.5px solid var(--border-light); cursor: pointer; transition: opacity 0.15s; }
+    .card-photos img:hover { opacity: 0.85; }
+    .card-utilities { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+    .card-utilities span { font-weight: 500; color: var(--text); }
+
+    /* LIGHTBOX */
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; align-items: center; justify-content: center; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 88vh; border-radius: 6px; object-fit: contain; }
+    .lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
+
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid.three { grid-template-columns: 1fr 1fr; }
+      .filter-months { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-eyebrow">Grand Army Gazette</div>
+    <div class="masthead-title">The Whisper Network</div>
+    <div class="masthead-sub">Reader-submitted apartments before they hit StreetEasy</div>
+  </div>
+
+  <!-- GATE -->
+  <div id="gate">
+    <div class="gate">
+      <div class="gate-hint">This page is for Grand Army Gazette subscribers.<br>Enter your subscriber password to continue.</div>
+      <div class="gate-row">
+        <input type="text" id="pw-input" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter') checkPassword()">
+        <button type="button" class="gate-btn" onclick="checkPassword()">Enter</button>
+      </div>
+      <div class="gate-error" id="gate-error"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content" style="display:none;">
+
+    <div class="main-tabs">
+      <button class="main-tab active" id="tab-browse" onclick="switchTab('browse')">Browse listings</button>
+      <button class="main-tab" id="tab-submit" onclick="switchTab('submit')">+ List your apartment</button>
+    </div>
+
+    <!-- BROWSE -->
+    <div id="browser">
+      <div class="filter-months">
+        <button class="filter-tab active" data-month="All" onclick="filterMonth(this)">All</button>
+        <button class="filter-tab" data-month="June" onclick="filterMonth(this)">June</button>
+        <button class="filter-tab" data-month="July" onclick="filterMonth(this)">July</button>
+        <button class="filter-tab" data-month="August" onclick="filterMonth(this)">August</button>
+        <button class="filter-tab" data-month="September" onclick="filterMonth(this)">Sept</button>
+        <button class="filter-tab" data-month="October" onclick="filterMonth(this)">October</button>
+        <button class="filter-tab" data-month="November" onclick="filterMonth(this)">November</button>
+        <button class="filter-tab" data-month="December" onclick="filterMonth(this)">December</button>
+        <button class="filter-tab" data-month="Flexible" onclick="filterMonth(this)">Flexible</button>
+      </div>
+      <div class="listings-meta">
+        <div class="listings-count" id="listings-count"></div>
+        <button class="refresh-btn" onclick="loadListings()">Refresh listings</button>
+      </div>
+      <div id="listings-container"><div class="loading">Loading listings…</div></div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div id="submit-tab" style="display:none;">
+      <div class="disclaimer">
+        Listings are reader-submitted and not vetted by Grand Army Gazette. Do your own due diligence before making arrangements or sharing personal information. Listings are only for Prospect Heights, Crown Heights, Park Slope, and surrounding neighborhoods.
+      </div>
+
+      <div id="main-form">
+        <div class="form-section">
+          <div class="section-label">When is it available?</div>
+          <div class="month-tabs">
+            <button class="month-tab active" data-month="June" onclick="selectMonth(this)">June</button>
+            <button class="month-tab" data-month="July" onclick="selectMonth(this)">July</button>
+            <button class="month-tab" data-month="August" onclick="selectMonth(this)">August</button>
+            <button class="month-tab" data-month="September" onclick="selectMonth(this)">September</button>
+            <button class="month-tab" data-month="October" onclick="selectMonth(this)">October</button>
+            <button class="month-tab" data-month="November" onclick="selectMonth(this)">November</button>
+            <button class="month-tab" data-month="December" onclick="selectMonth(this)">December</button>
+            <button class="month-tab" data-month="Flexible" onclick="selectMonth(this)">Flexible</button>
+          </div>
+          <input type="hidden" id="available-month" value="June">
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">The apartment</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Neighborhood <span class="req">*</span></label>
+              <select id="neighborhood" required>
+                <option value="">Select neighborhood</option>
+                <option>Prospect Heights</option>
+                <option>Crown Heights</option>
+                <option>Park Slope</option>
+                <option>Clinton Hill</option>
+                <option>Fort Greene</option>
+                <option>Prospect Lefferts Gardens</option>
+                <option>Gowanus</option>
+                <option>Windsor Terrace</option>
+                <option>Other nearby</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Cross streets / block <span class="req">*</span></label>
+              <input type="text" id="cross-streets" placeholder="e.g. Vanderbilt & Bergen" required>
+            </div>
+          </div>
+          <div class="form-grid three">
+            <div class="field">
+              <label>Bedrooms <span class="req">*</span></label>
+              <select id="bedrooms" required>
+                <option value="">—</option>
+                <option>Studio</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4+">4+</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Bathrooms</label>
+              <select id="bathrooms">
+                <option value="">—</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Monthly rent <span class="req">*</span></label>
+              <input type="text" id="rent" placeholder="e.g. $2,400" required>
+            </div>
+          </div>
+          <div class="form-section">
+            <div style="margin-bottom:8px"><label style="font-size:12px;font-weight:500;color:var(--text-secondary)">Apartment type</label></div>
+            <div class="radio-row">
+              <label class="radio-chip selected"><input type="radio" name="apt-type" value="Rental" checked> Rental</label>
+              <label class="radio-chip"><input type="radio" name="apt-type" value="Sublet"> Sublet</label>
+              <label class="radio-chip"><input type="radio" name="apt-type" value="Room in apartment"> Room in apartment</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-section">
+          <div class="section-label">Details &amp; perks</div>
+          <div class="form-grid full">
+            <div class="field">
+              <label>Description <span class="req">*</span></label>
+              <textarea id="description" placeholder="Tell neighbors what makes this place special — layout, light, outdoor space, quirks, etc." required></textarea>
+            </div>
+          </div>
+          <div class="form-grid full" style="margin-bottom:14px">
+            <div class="field">
+              <label>Utilities included?</label>
+              <input type="text" id="utilities" placeholder="e.g. Heat and hot water included, tenant pays electric">
+            </div>
+          </div>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" value="Rent Stabilized"> Rent stabilized</label>
+            <label class="check-item"><input type="checkbox" value="Rent Controlled"> Rent controlled</label>
+            <label class="check-item"><input type="checkbox" value="Elevator Building"> Elevator building</label>
+            <label class="check-item"><input type="checkbox" value="Laundry in Building"> Laundry in building</label>
+            <label class="check-item"><input type="checkbox" value="Laundry in Unit"> Laundry in unit</label>
+            <label class="check-item"><input type="checkbox" value="Dishwasher"> Dishwasher</label>
+            <label class="check-item"><input type="checkbox" value="Pets OK"> Pets ok</label>
+            <label class="check-item"><input type="checkbox" value="Parking Available"> Parking available</label>
+            <label class="check-item"><input type="checkbox" value="Outdoor Space"> Outdoor space</label>
+          </div>
+          <div class="form-grid full" style="margin-top:16px">
+            <div class="field">
+              <label>Photos <span style="font-weight:400;color:var(--text-secondary)">(optional — up to 5)</span></label>
+              <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+                <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event)">
+                <div class="photo-upload-label">
+                  <strong>Tap to add photos</strong>
+                  Choose from your camera roll or files
+                </div>
+                <div class="photo-previews" id="photo-previews"></div>
+                <div class="photo-uploading" id="photo-uploading">Uploading photos...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-section">
+          <div class="section-label">How to reach you</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Your first name <span class="req">*</span></label>
+              <input type="text" id="first-name" placeholder="Jane" required>
+            </div>
+            <div class="field">
+              <label>Contact (email or phone) <span class="req">*</span></label>
+              <input type="text" id="contact" placeholder="jane@email.com or 718-555-..." required>
+            </div>
+          </div>
+          <div class="form-grid full">
+            <div class="field">
+              <label>Anything else neighbors should know?</label>
+              <input type="text" id="extra" placeholder="e.g. Current tenant moving for work, happy to answer questions">
+            </div>
+          </div>
+        </div>
+
+        <div class="error-msg" id="error-msg">Please fill in all required fields before submitting.</div>
+        <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Submit listing to the whisper network</button>
+      </div>
+
+      <div class="success-msg" id="success-msg">
+        <div style="font-size:32px;margin-bottom:12px;font-family:'Playfair Display',serif">Done!</div>
+        <p>Your listing is in the network.<br>Neighbors will be in touch soon.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">x</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  const FORM_ACTION   = 'https://docs.google.com/forms/d/e/1FAIpQLSfjdu64lskky4I9t3QVMXRzGM_r2dX0e15XeD8wOH41ZJXycg/formResponse';
+  const SHEET_CSV     = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSszAYcq88TkmJiYh1UfFRoFfxFmn9c-ayDgipOrps4ruvyk2ABxNHDOu-HSqmWHHvO12o22mzHmTn_/pub?gid=220547198&single=true&output=csv';
+  const CLOUD_NAME    = 'dz8yvfckx';
+  const UPLOAD_PRESET = 'Grand Army Gazette Apartment Whisper Network';
+
+  let allListings = [], activeMonth = 'All', uploadedPhotoUrls = [];
+
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value.trim().toLowerCase();
+    if (val === 'radiobakeryline') {
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+      loadListings();
+    } else {
+      document.getElementById('gate-error').textContent = 'Incorrect password. Check your newsletter for the subscriber password.';
+      document.getElementById('pw-input').style.borderColor = '#c0392b';
+    }
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tab-browse').classList.toggle('active', tab === 'browse');
+    document.getElementById('tab-submit').classList.toggle('active', tab === 'submit');
+    document.getElementById('browser').style.display = tab === 'browse' ? 'block' : 'none';
+    document.getElementById('submit-tab').style.display = tab === 'submit' ? 'block' : 'none';
+  }
+
+  function filterMonth(btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeMonth = btn.dataset.month;
+    renderListings();
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = parseCSVLine(lines[0]);
+    return lines.slice(1).map(line => {
+      const cols = parseCSVLine(line);
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = cols[i] || ''; });
+      return obj;
+    }).filter(r => Object.values(r).some(v => v.trim()));
+  }
+
+  function parseCSVLine(line) {
+    const cols = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { cols.push(cur.trim().replace(/^"|"$/g,'')); cur = ''; }
+      else { cur += line[i]; }
+    }
+    cols.push(cur.trim().replace(/^"|"$/g,''));
+    return cols;
+  }
+
+  async function loadListings() {
+    document.getElementById('listings-container').innerHTML = '<div class="loading">Loading listings…</div>';
+    document.getElementById('listings-count').textContent = '';
+    try {
+      const res = await fetch(SHEET_CSV + '&cachebust=' + Date.now());
+      const text = await res.text();
+      allListings = parseCSV(text).reverse();
+      renderListings();
+    } catch(e) {
+      document.getElementById('listings-container').innerHTML = '<div class="no-listings"><p>Could not load listings right now.<br>Try refreshing in a moment.</p></div>';
+    }
+  }
+
+  function findKey(keys, ...terms) {
+    return keys.find(k => terms.some(t => k.toLowerCase().includes(t))) || '';
+  }
+
+  function renderListings() {
+    const container = document.getElementById('listings-container');
+    const countEl   = document.getElementById('listings-count');
+    if (!allListings.length) {
+      countEl.textContent = '';
+      container.innerHTML = '<div class="no-listings"><p>No listings yet.<br>Be the first to post one.</p></div>';
+      return;
+    }
+
+    const keys = Object.keys(allListings[0]);
+    const K = {
+      month:  findKey(keys,'available','month') || keys[1],
+      hood:   findKey(keys,'neighborhood') || keys[2],
+      cross:  findKey(keys,'cross','street') || keys[3],
+      beds:   findKey(keys,'bedroom') || keys[4],
+      baths:  findKey(keys,'bathroom') || keys[5],
+      rent:   keys.find(k => k.toLowerCase().includes('rent') && !k.toLowerCase().includes('stab') && !k.toLowerCase().includes('cont')) || keys[6],
+      type:   findKey(keys,'type') || keys[7],
+      desc:   findKey(keys,'desc') || keys[8],
+      amen:   findKey(keys,'amenit','perk') || keys[9],
+      name:   findKey(keys,'name','first') || keys[10],
+      contact:findKey(keys,'contact','email','phone') || keys[11],
+      extra:  findKey(keys,'else','extra','know') || keys[12],
+    };
+
+    const filtered = activeMonth === 'All'
+      ? allListings
+      : allListings.filter(l => (l[K.month]||'').toLowerCase().includes(activeMonth.toLowerCase()));
+
+    countEl.textContent = filtered.length ? `${filtered.length} listing${filtered.length !== 1 ? 's' : ''}` : '';
+
+    if (!filtered.length) {
+      container.innerHTML = '<div class="no-listings"><p>No listings for this month yet.<br>Be the first to post one.</p></div>';
+      return;
+    }
+
+    const utilitiesKey = Object.keys(allListings[0]).find(k => k.toLowerCase().includes('utilit')) || '';
+
+    container.innerHTML = filtered.map(l => {
+      const beds = l[K.beds] || '';
+      const baths = l[K.baths] || '';
+      const amenities = (l[K.amen]||'').split(',').map(a=>a.trim()).filter(Boolean);
+      const bedsLabel = beds === 'Studio' ? 'Studio' : beds ? `${beds} bed${beds==='1'?'':'s'}` : '';
+      const bathsLabel = baths ? `${baths} bath${baths==='1'?'':'s'}` : '';
+      const extra = l[K.extra] || '';
+      const utilities = utilitiesKey ? (l[utilitiesKey] || '') : '';
+
+      // Extract photos embedded in description
+      let desc = l[K.desc] || '';
+      let photos = [];
+      const photoMatch = desc.match(/\[photos:([^\]]+)\]/);
+      if (photoMatch) {
+        photos = photoMatch[1].split('|').filter(Boolean);
+        desc = desc.replace(/\s*\[photos:[^\]]+\]/, '').trim();
+      }
+
+      return `<div class="listing-card">
+        <div class="card-top">
+          <div>
+            <div class="card-address">${l[K.cross] || 'Address on request'}</div>
+            <div class="card-neighborhood">${l[K.hood] || ''}</div>
+          </div>
+          <div class="card-rent">${l[K.rent] || ''}</div>
+        </div>
+        <div class="card-meta">
+          ${bedsLabel ? `<span class="card-pill">${bedsLabel}</span>` : ''}
+          ${bathsLabel ? `<span class="card-pill">${bathsLabel}</span>` : ''}
+          ${l[K.type] ? `<span class="card-pill type">${l[K.type]}</span>` : ''}
+        </div>
+        ${photos.length ? `<div class="card-photos">${photos.map(p=>`<img src="${p}" alt="apartment photo" onclick="openLightbox('${p}')">`).join('')}</div>` : ''}
+        ${desc ? `<div class="card-desc">${desc}</div>` : ''}
+        ${utilities ? `<div class="card-utilities">Utilities: <span>${utilities}</span></div>` : ''}
+        ${extra ? `<div class="card-desc" style="font-style:italic;margin-top:-4px">"${extra}"</div>` : ''}
+        ${amenities.length ? `<div class="card-amenities">${amenities.map(a=>`<span class="amenity-tag">${a}</span>`).join('')}</div>` : ''}
+        <div class="card-footer">
+          <div class="card-contact">Contact <strong>${l[K.name]||''}</strong>${l[K.contact] ? ' — ' + l[K.contact] : ''}</div>
+          ${l[K.month] ? `<span class="card-month-badge">Available ${l[K.month]}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // PHOTO UPLOAD
+  async function handlePhotoSelect(event) {
+    const files = [...event.target.files].slice(0, 5 - uploadedPhotoUrls.length);
+    if (!files.length) return;
+    const uploading = document.getElementById('photo-uploading');
+    uploading.style.display = 'block';
+    for (const file of files) {
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.secure_url) {
+          uploadedPhotoUrls.push(data.secure_url);
+          addPhotoPreview(data.secure_url);
+        }
+      } catch(e) { console.error('Upload failed', e); }
+    }
+    uploading.style.display = 'none';
+    event.target.value = '';
+  }
+
+  function addPhotoPreview(url) {
+    const previews = document.getElementById('photo-previews');
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-preview-wrap';
+    wrap.innerHTML = `<img src="${url}" alt="preview"><button class="photo-remove" onclick="removePhoto(this,'${url}')">x</button>`;
+    previews.appendChild(wrap);
+  }
+
+  function removePhoto(btn, url) {
+    btn.closest('.photo-preview-wrap').remove();
+    uploadedPhotoUrls = uploadedPhotoUrls.filter(u => u !== url);
+  }
+
+  // LIGHTBOX
+  function openLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+  }
+
+  function selectMonth(btn) {
+    document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('available-month').value = btn.dataset.month;
+  }
+
+  document.querySelectorAll('.radio-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      const name = this.querySelector('input').name;
+      document.querySelectorAll(`.radio-chip input[name="${name}"]`).forEach(i => i.closest('.radio-chip').classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+
+  async function handleSubmit() {
+    const req = ['neighborhood','cross-streets','bedrooms','rent','description','first-name','contact'];
+    let valid = true;
+    req.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el?.value.trim()) { el.style.borderColor='#c0392b'; valid=false; }
+      else { el.style.borderColor=''; }
+    });
+    if (!valid) { document.getElementById('error-msg').style.display='block'; return; }
+    document.getElementById('error-msg').style.display='none';
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+
+    const aptType = document.querySelector('input[name="apt-type"]:checked')?.value || 'Rental';
+    const amenities = [...document.querySelectorAll('.check-item input:checked')].map(c => c.value);
+    const params = new URLSearchParams();
+    params.append('entry.1602218161', document.getElementById('available-month').value);
+    params.append('entry.90151478',   document.getElementById('neighborhood').value);
+    params.append('entry.931717017',  document.getElementById('cross-streets').value);
+    params.append('entry.893546547',  document.getElementById('bedrooms').value);
+    params.append('entry.1296252250', document.getElementById('bathrooms').value);
+    params.append('entry.410351910',  document.getElementById('rent').value);
+    params.append('entry.829502839',  aptType);
+    params.append('entry.565357913',  document.getElementById('description').value);
+    amenities.forEach(a => params.append('entry.915728283', a));
+    params.append('entry.1661790660', document.getElementById('first-name').value);
+    params.append('entry.1604608824', document.getElementById('contact').value);
+    const extra = document.getElementById('extra').value;
+    if (extra) params.append('entry.90541211', extra);
+    const utilities = document.getElementById('utilities').value;
+    if (utilities) params.append('entry.455729178', utilities);
+    if (uploadedPhotoUrls.length) params.append('entry.455729178_photos', uploadedPhotoUrls.join(','));
+
+    // Store photos in a way we can retrieve — append as comma-separated URLs in the extra notes
+    // Since Google Forms doesn't have a photo URL field yet, we append them to the notes field
+    // Better: use a dedicated hidden field. We'll pass photos as part of description suffix.
+    const photoNote = uploadedPhotoUrls.length ? ' [photos:' + uploadedPhotoUrls.join('|') + ']' : '';
+    if (photoNote) {
+      const descEl = document.getElementById('description');
+      params.set('entry.565357913', descEl.value + photoNote);
+    }
+
+    try {
+      await fetch(FORM_ACTION, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:params.toString() });
+    } catch(e) {}
+
+    document.getElementById('main-form').style.display='none';
+    document.getElementById('success-msg').style.display='block';
+  }
+</script>
+</body>
+</html>
