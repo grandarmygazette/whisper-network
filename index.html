@@ -619,12 +619,38 @@
       params.set('entry.565357913', descEl.value + photoNote);
     }
 
-    try {
-      await fetch(FORM_ACTION, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:params.toString() });
-    } catch(e) {}
+    // Use hidden iframe to submit — more reliable than fetch for Google Forms
+    let iframe = document.getElementById('submit-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'submit-iframe';
+      iframe.name = 'submit-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
 
-    document.getElementById('main-form').style.display='none';
-    document.getElementById('success-msg').style.display='block';
+    const formEl = document.createElement('form');
+    formEl.method = 'POST';
+    formEl.action = FORM_ACTION;
+    formEl.target = 'submit-iframe';
+    formEl.style.display = 'none';
+
+    for (const [key, value] of params.entries()) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      formEl.appendChild(input);
+    }
+
+    document.body.appendChild(formEl);
+    formEl.submit();
+    setTimeout(() => { document.body.removeChild(formEl); }, 1000);
+
+    setTimeout(() => {
+      document.getElementById('main-form').style.display='none';
+      document.getElementById('success-msg').style.display='block';
+    }, 800);
   }
 </script>
 </body>
