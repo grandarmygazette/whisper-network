@@ -608,7 +608,6 @@
     if (extra) params.append('entry.90541211', extra);
     const utilities = document.getElementById('utilities').value;
     if (utilities) params.append('entry.455729178', utilities);
-    if (uploadedPhotoUrls.length) params.append('entry.455729178_photos', uploadedPhotoUrls.join(','));
 
     // Store photos in a way we can retrieve — append as comma-separated URLs in the extra notes
     // Since Google Forms doesn't have a photo URL field yet, we append them to the notes field
