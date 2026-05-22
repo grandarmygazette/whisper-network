@@ -407,26 +407,34 @@
   }
 
   function parseCSV(text) {
-    const lines = text.trim().split('\n');
-    if (lines.length < 2) return [];
-    const headers = parseCSVLine(lines[0]);
-    return lines.slice(1).map(line => {
-      const cols = parseCSVLine(line);
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = cols[i] || ''; });
-      return obj;
-    }).filter(r => Object.values(r)[0] && Object.values(r)[0].trim());
-  }
-
-  function parseCSVLine(line) {
-    const cols = []; let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; }
-      else if (line[i] === ',' && !inQ) { cols.push(cur.trim().replace(/^"|"$/g,'')); cur = ''; }
-      else { cur += line[i]; }
+    // Parse entire CSV at once, handling multi-line quoted fields
+    const rows = [];
+    let row = [], cur = '', inQ = false, i = 0;
+    while (i < text.length) {
+      const ch = text[i];
+      if (ch === '"') {
+        if (inQ && text[i+1] === '"') { cur += '"'; i += 2; continue; } // escaped quote
+        inQ = !inQ; i++; continue;
+      }
+      if (ch === ',' && !inQ) { row.push(cur); cur = ''; i++; continue; }
+      if ((ch === '\n' || ch === '\r') && !inQ) {
+        if (ch === '\r' && text[i+1] === '\n') i++;
+        row.push(cur); cur = '';
+        if (row.some(c => c.trim())) rows.push(row);
+        row = []; i++; continue;
+      }
+      cur += ch; i++;
     }
-    cols.push(cur.trim().replace(/^"|"$/g,''));
-    return cols;
+    if (cur || row.length) { row.push(cur); if (row.some(c => c.trim())) rows.push(row); }
+    if (rows.length < 2) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1)
+      .filter(r => r[0] && r[0].trim()) // must have timestamp
+      .map(cols => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
+        return obj;
+      });
   }
 
   async function loadListings() {
