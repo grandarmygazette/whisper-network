@@ -457,18 +457,19 @@
 
     const keys = Object.keys(allListings[0]);
     const K = {
-      month:  findKey(keys,'available','month') || keys[1],
-      hood:   findKey(keys,'neighborhood') || keys[2],
-      cross:  findKey(keys,'cross','street') || keys[3],
-      beds:   findKey(keys,'bedroom') || keys[4],
-      baths:  findKey(keys,'bathroom') || keys[5],
-      rent:   keys.find(k => k.toLowerCase().includes('rent') && !k.toLowerCase().includes('stab') && !k.toLowerCase().includes('cont')) || keys[6],
-      type:   findKey(keys,'type') || keys[7],
-      desc:   findKey(keys,'desc') || keys[8],
-      amen:   findKey(keys,'amenit','perk') || keys[9],
-      name:   findKey(keys,'name','first') || keys[10],
-      contact:findKey(keys,'contact','email','phone') || keys[11],
-      extra:  findKey(keys,'else','extra','know') || keys[12],
+      month:   keys[1],
+      hood:    keys[2],
+      cross:   keys[3],
+      beds:    keys[4],
+      baths:   keys[5],
+      rent:    keys[6],
+      type:    keys[7],
+      desc:    keys[8],
+      amen:    keys[9],
+      name:    keys[10],
+      contact: keys[11],
+      extra:   keys[12],
+      util:    keys[14],
     };
 
     const filtered = activeMonth === 'All'
@@ -482,7 +483,7 @@
       return;
     }
 
-    const utilitiesKey = Object.keys(allListings[0]).find(k => k.toLowerCase().includes('utilit')) || '';
+    const utilitiesKey = K.util;
 
     container.innerHTML = filtered.map(l => {
       const beds = l[K.beds] || '';
@@ -491,7 +492,7 @@
       const bedsLabel = beds === 'Studio' ? 'Studio' : beds ? `${beds} bed${beds==='1'?'':'s'}` : '';
       const bathsLabel = baths ? `${baths} bath${baths==='1'?'':'s'}` : '';
       const extra = l[K.extra] || '';
-      const utilities = utilitiesKey ? (l[utilitiesKey] || '') : '';
+      const utilities = l[K.util] || '';
 
       // Extract photos embedded in description
       let desc = l[K.desc] || '';
