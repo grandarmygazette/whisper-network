@@ -369,8 +369,7 @@
 <script>
   const FORM_ACTION   = 'https://docs.google.com/forms/d/e/1FAIpQLSfjdu64lskky4I9t3QVMXRzGM_r2dX0e15XeD8wOH41ZJXycg/formResponse';
   const SHEET_CSV     = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSszAYcq88TkmJiYh1UfFRoFfxFmn9c-ayDgipOrps4ruvyk2ABxNHDOu-HSqmWHHvO12o22mzHmTn_/pub?gid=220547198&single=true&output=csv';
-  const CLOUD_NAME    = 'dz8yvfckx';
-  const UPLOAD_PRESET = 'Grand Army Gazette Apartment Whisper Network';
+  const IMGBB_API_KEY = '9d09f686f4ba53e6da6907ce4dde04bf';
 
   let allListings = [], activeMonth = 'All', uploadedPhotoUrls = [];
 
@@ -546,13 +545,12 @@
     for (const file of files) {
       try {
         const fd = new FormData();
-        fd.append('file', file);
-        fd.append('upload_preset', UPLOAD_PRESET);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+        fd.append('image', file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
         const data = await res.json();
-        if (data.secure_url) {
-          uploadedPhotoUrls.push(data.secure_url);
-          addPhotoPreview(data.secure_url);
+        if (data.success && data.data && data.data.url) {
+          uploadedPhotoUrls.push(data.data.url);
+          addPhotoPreview(data.data.url);
         }
       } catch(e) { console.error('Upload failed', e); }
     }
