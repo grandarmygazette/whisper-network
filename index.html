@@ -137,6 +137,23 @@
     .lightbox img { max-width: 90vw; max-height: 88vh; border-radius: 6px; object-fit: contain; }
     .lightbox-close { position: fixed; top: 16px; right: 20px; color: white; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
 
+    /* SECTION TOGGLE: Apartments / Stays & swaps */
+    .mode-toggle { display: flex; gap: 6px; justify-content: center; margin-bottom: 1.25rem; }
+    .mode-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; padding: 8px 18px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.12s; }
+    .mode-btn:hover { background: white; color: var(--text); }
+    .mode-btn.active { background: var(--text); color: white; border-color: var(--text); }
+
+    /* STAYS */
+    .filter-types { display: grid; grid-template-columns: repeat(3, 1fr); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+    .filter-types .filter-tab { border-bottom: none; }
+    .stay-note { font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; border-left: 2px solid var(--border); padding: 6px 12px; margin-bottom: 1.25rem; }
+    .stay-note a { color: var(--text); }
+    .card-type-badge { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 12px; background: var(--text); color: white; white-space: nowrap; }
+    .card-dates { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .field-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+    .free-confirm { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); line-height: 1.5; cursor: pointer; margin-top: 0.5rem; }
+    .free-confirm input { width: 15px; height: 15px; margin-top: 3px; flex-shrink: 0; accent-color: var(--text); cursor: pointer; }
+
     @media (max-width: 480px) {
       .form-grid { grid-template-columns: 1fr; }
       .form-grid.three { grid-template-columns: 1fr 1fr; }
@@ -176,6 +193,12 @@
   <!-- CONTENT -->
   <div id="content" style="display:none;">
 
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-apt" onclick="switchMode('apt')">Apartments</button>
+      <button class="mode-btn" id="mode-stays" onclick="switchMode('stays')">Stays &amp; swaps</button>
+    </div>
+
+    <div id="apt-section">
     <div class="main-tabs">
       <button class="main-tab active" id="tab-browse" onclick="switchTab('browse')">Browse listings</button>
       <button class="main-tab" id="tab-submit" onclick="switchTab('submit')">+ List your apartment</button>
@@ -314,7 +337,7 @@
             <div class="field">
               <label>Photos <span style="font-weight:400;color:var(--text-secondary)">(optional — up to 5)</span></label>
               <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
-                <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event)">
+                <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event, 'apt')">
                 <div class="photo-upload-label">
                   <strong>Tap to add photos</strong>
                   Choose from your camera roll or files
@@ -357,6 +380,157 @@
         <p>Your listing is in the network.<br>Neighbors will be in touch soon.</p>
       </div>
     </div>
+    </div><!-- /apt-section -->
+
+    <!-- STAYS & SWAPS -->
+    <div id="stays-section" style="display:none;">
+
+      <div class="main-tabs">
+        <button class="main-tab active" id="stays-tab-browse" onclick="switchStaysTab('browse')">Browse stays</button>
+        <button class="main-tab" id="stays-tab-submit" onclick="switchStaysTab('submit')">+ Offer a stay</button>
+      </div>
+
+      <div class="stay-note">
+        House-sits and spare rooms offered by neighbors, free of charge &mdash; no money should change hands. Grand Army Gazette points readers to the city's rules on short stays: paid stays under 30 nights in New York City are covered by short-term rental law. Learn more from the <a href="https://www.nyc.gov/site/specialenforcement" target="_blank" rel="noopener">Mayor's Office of Special Enforcement</a>, and check your lease for guest rules, too. Listings are reader-submitted and are not vetted, verified, or endorsed by Grand Army Gazette.
+      </div>
+
+      <!-- STAYS BROWSE -->
+      <div id="stays-browser">
+        <div class="filter-types">
+          <button class="filter-tab stay-filter active" data-type="All" onclick="filterStayType(this)">All</button>
+          <button class="filter-tab stay-filter" data-type="House-Sit" onclick="filterStayType(this)">House-sits</button>
+          <button class="filter-tab stay-filter" data-type="Spare Room" onclick="filterStayType(this)">Spare rooms</button>
+        </div>
+        <div class="listings-meta">
+          <div class="listings-count" id="stays-count"></div>
+          <button class="refresh-btn" onclick="loadStays()">Refresh listings</button>
+        </div>
+        <div id="stays-container"><div class="loading">Loading listings…</div></div>
+      </div>
+
+      <!-- STAYS SUBMIT -->
+      <div id="stays-submit" style="display:none;">
+        <div id="stays-form">
+          <div class="form-section">
+            <div class="section-label">What are you offering?</div>
+            <div class="radio-row">
+              <label class="radio-chip selected"><input type="radio" name="stay-type" value="House-Sit" checked> House-sit</label>
+              <label class="radio-chip"><input type="radio" name="stay-type" value="Spare Room"> Spare room</label>
+            </div>
+            <div class="field-hint"><strong>House-sit:</strong> you're away and need someone to stay over and help out. <strong>Spare room:</strong> you're home and have a room for a neighbor's visiting guest.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">Where</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Neighborhood <span class="req">*</span></label>
+                <select id="stay-neighborhood">
+                  <option value="">Select neighborhood</option>
+                  <option>Prospect Heights</option>
+                  <option>Crown Heights</option>
+                  <option>Park Slope</option>
+                  <option>Clinton Hill</option>
+                  <option>Fort Greene</option>
+                  <option>Prospect Lefferts Gardens</option>
+                  <option>Gowanus</option>
+                  <option>Windsor Terrace</option>
+                  <option>Other nearby</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Cross streets / block <span class="req">*</span></label>
+                <input type="text" id="stay-cross" placeholder="e.g. Washington & Sterling">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">When</div>
+            <div class="radio-row" style="margin-bottom:14px">
+              <label class="radio-chip selected"><input type="radio" name="stay-avail" value="Specific dates" checked> Specific dates</label>
+              <label class="radio-chip"><input type="radio" name="stay-avail" value="Multiple date ranges"> Multiple date ranges</label>
+              <label class="radio-chip"><input type="radio" name="stay-avail" value="Flexible"> Flexible</label>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Dates <span class="req" id="stay-dates-req">*</span></label>
+                <input type="text" id="stay-dates" placeholder="e.g. Nov 8–10, or Nov 1–3 & Nov 15–17">
+              </div>
+              <div class="field">
+                <label>Guests <span class="req">*</span></label>
+                <select id="stay-guests">
+                  <option value="">—</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4+">4+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-section">
+            <div class="section-label">Details</div>
+            <div class="form-grid full">
+              <div class="field">
+                <label>Description <span class="req">*</span></label>
+                <textarea id="stay-description" placeholder="What's the space like? For house-sits: pets, plants, building quirks, anything a sitter should know."></textarea>
+              </div>
+            </div>
+            <div class="form-grid full">
+              <div class="field">
+                <label>In exchange for <span class="req">*</span></label>
+                <input type="text" id="stay-exchange" placeholder="e.g. Feed the cat twice a day — or nothing, just be a good houseguest">
+              </div>
+            </div>
+            <div class="form-grid full" style="margin-top:2px">
+              <div class="field">
+                <label>Photos <span style="font-weight:400;color:var(--text-secondary)">(optional — up to 5)</span></label>
+                <div class="photo-upload-area" onclick="document.getElementById('stay-photo-input').click()">
+                  <input type="file" id="stay-photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event, 'stay')">
+                  <div class="photo-upload-label">
+                    <strong>Tap to add photos</strong>
+                    Choose from your camera roll or files
+                  </div>
+                  <div class="photo-previews" id="stay-photo-previews"></div>
+                  <div class="photo-uploading" id="stay-photo-uploading">Uploading photos...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-section">
+            <div class="section-label">How to reach you</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Your first name <span class="req">*</span></label>
+                <input type="text" id="stay-first-name" placeholder="Jane">
+              </div>
+              <div class="field">
+                <label>Contact (email or phone) <span class="req">*</span></label>
+                <input type="text" id="stay-contact" placeholder="jane@email.com or 718-555-...">
+              </div>
+            </div>
+          </div>
+
+          <label class="free-confirm"><input type="checkbox" id="stay-free-check"> I confirm this stay is free. No payment will be requested or accepted.</label>
+
+          <div class="error-msg" id="stay-error-msg"></div>
+          <button class="submit-btn" id="stay-submit-btn" onclick="handleStaySubmit()">Post to the whisper network</button>
+        </div>
+
+        <div class="success-msg" id="stay-success-msg">
+          <div style="font-size:32px;margin-bottom:12px;font-family:'Playfair Display',serif">Done!</div>
+          <p>Your stay is in the network.<br>Neighbors will be in touch soon.</p>
+        </div>
+      </div>
+
+    </div><!-- /stays-section -->
 
   </div>
 </div>
@@ -372,7 +546,24 @@
   const SHEET_CSV     = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSszAYcq88TkmJiYh1UfFRoFfxFmn9c-ayDgipOrps4ruvyk2ABxNHDOu-HSqmWHHvO12o22mzHmTn_/pub?gid=220547198&single=true&output=csv';
   const IMGBB_API_KEY = '9d09f686f4ba53e6da6907ce4dde04bf';
 
+  // STAYS & SWAPS — separate Google Form + Sheet
+  const STAYS_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfLzqsYrjgRUvB2Q6E0Uelcf8ACTNF7S0o3oV3iRa7epspCeA/formResponse';
+  const STAYS_CSV         = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxwDv3OcL-Y4pTjnB6Zxgw561sFdE7NomNLSN6Dfk-5S9AqAk5f1SoDJSgJ7gBf5CzY8hkHUGceykw/pub?gid=1414812249&single=true&output=csv';
+  const STAYS_ENTRY = {
+    type:     'entry.480512607',
+    hood:     'entry.1216270345',
+    cross:    'entry.1115556006',
+    avail:    'entry.262017983',
+    dates:    'entry.921547396',
+    guests:   'entry.957416224',
+    desc:     'entry.844302892',
+    exchange: 'entry.1209070456',
+    name:     'entry.1964822613',
+    contact:  'entry.1344661951',
+  };
+
   let allListings = [], activeMonth = 'All', uploadedPhotoUrls = [];
+  let allStays = [], activeStayType = 'All', staysLoaded = false, stayPhotoUrls = [];
 
   function checkPassword() {
     const val = document.getElementById('pw-input').value.trim().toLowerCase();
@@ -400,7 +591,7 @@
   }
 
   function filterMonth(btn) {
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.filter-months .filter-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     activeMonth = btn.dataset.month;
     renderListings();
@@ -537,11 +728,14 @@
     }).join('');
   }
 
-  // PHOTO UPLOAD
-  async function handlePhotoSelect(event) {
-    const files = [...event.target.files].slice(0, 5 - uploadedPhotoUrls.length);
+  // PHOTO UPLOAD (shared by the apartment form and the stays form)
+  function photoList(which) { return which === 'stay' ? stayPhotoUrls : uploadedPhotoUrls; }
+  function photoPrefix(which) { return which === 'stay' ? 'stay-' : ''; }
+
+  async function handlePhotoSelect(event, which = 'apt') {
+    const files = [...event.target.files].slice(0, 5 - photoList(which).length);
     if (!files.length) return;
-    const uploading = document.getElementById('photo-uploading');
+    const uploading = document.getElementById(photoPrefix(which) + 'photo-uploading');
     uploading.style.display = 'block';
     for (const file of files) {
       try {
@@ -550,8 +744,8 @@
         const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
         const data = await res.json();
         if (data.success && data.data && data.data.url) {
-          uploadedPhotoUrls.push(data.data.url);
-          addPhotoPreview(data.data.url);
+          photoList(which).push(data.data.url);
+          addPhotoPreview(data.data.url, which);
         }
       } catch(e) { console.error('Upload failed', e); }
     }
@@ -559,17 +753,214 @@
     event.target.value = '';
   }
 
-  function addPhotoPreview(url) {
-    const previews = document.getElementById('photo-previews');
+  function addPhotoPreview(url, which = 'apt') {
+    const previews = document.getElementById(photoPrefix(which) + 'photo-previews');
     const wrap = document.createElement('div');
     wrap.className = 'photo-preview-wrap';
-    wrap.innerHTML = `<img src="${url}" alt="preview"><button class="photo-remove" onclick="removePhoto(this,'${url}')">x</button>`;
+    wrap.innerHTML = `<img src="${url}" alt="preview"><button class="photo-remove" onclick="event.stopPropagation(); removePhoto(this,'${url}','${which}')">x</button>`;
     previews.appendChild(wrap);
   }
 
-  function removePhoto(btn, url) {
+  function removePhoto(btn, url, which = 'apt') {
     btn.closest('.photo-preview-wrap').remove();
-    uploadedPhotoUrls = uploadedPhotoUrls.filter(u => u !== url);
+    if (which === 'stay') stayPhotoUrls = stayPhotoUrls.filter(u => u !== url);
+    else uploadedPhotoUrls = uploadedPhotoUrls.filter(u => u !== url);
+  }
+
+  // ---------- STAYS & SWAPS ----------
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function normType(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
+
+  function switchMode(mode) {
+    document.getElementById('mode-apt').classList.toggle('active', mode === 'apt');
+    document.getElementById('mode-stays').classList.toggle('active', mode === 'stays');
+    document.getElementById('apt-section').style.display = mode === 'apt' ? 'block' : 'none';
+    document.getElementById('stays-section').style.display = mode === 'stays' ? 'block' : 'none';
+    if (mode === 'stays' && !staysLoaded) { staysLoaded = true; loadStays(); }
+  }
+
+  function switchStaysTab(tab) {
+    document.getElementById('stays-tab-browse').classList.toggle('active', tab === 'browse');
+    document.getElementById('stays-tab-submit').classList.toggle('active', tab === 'submit');
+    document.getElementById('stays-browser').style.display = tab === 'browse' ? 'block' : 'none';
+    document.getElementById('stays-submit').style.display = tab === 'submit' ? 'block' : 'none';
+  }
+
+  function filterStayType(btn) {
+    document.querySelectorAll('.stay-filter').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeStayType = btn.dataset.type;
+    renderStays();
+  }
+
+  async function loadStays() {
+    document.getElementById('stays-container').innerHTML = '<div class="loading">Loading listings…</div>';
+    document.getElementById('stays-count').textContent = '';
+    try {
+      const res = await fetch(STAYS_CSV + '&cachebust=' + Date.now());
+      const text = await res.text();
+      allStays = parseCSV(text).reverse();
+      renderStays();
+    } catch(e) {
+      document.getElementById('stays-container').innerHTML = '<div class="no-listings"><p>Could not load listings right now.<br>Try refreshing in a moment.</p></div>';
+    }
+  }
+
+  function renderStays() {
+    const container = document.getElementById('stays-container');
+    const countEl   = document.getElementById('stays-count');
+    if (!allStays.length) {
+      countEl.textContent = '';
+      container.innerHTML = '<div class="no-listings"><p>No stays posted yet.<br>Be the first to offer one.</p></div>';
+      return;
+    }
+
+    // Match columns by header name, falling back to position
+    const keys = Object.keys(allStays[0]);
+    const pick = (pos, ...terms) => findKey(keys, ...terms) || keys[pos];
+    const K = {
+      type:    pick(1, 'type of stay'),
+      hood:    pick(2, 'neighborhood'),
+      cross:   pick(3, 'cross'),
+      avail:   pick(4, 'availability'),
+      dates:   keys.find(k => k.trim().toLowerCase() === 'dates') || keys[5],
+      guests:  pick(6, 'guest'),
+      desc:    pick(7, 'description'),
+      exch:    pick(8, 'exchange'),
+      name:    pick(9, 'first name'),
+      contact: pick(10, 'contact'),
+    };
+
+    const filtered = activeStayType === 'All'
+      ? allStays
+      : allStays.filter(l => normType(l[K.type]) === normType(activeStayType));
+
+    countEl.textContent = filtered.length ? `${filtered.length} listing${filtered.length !== 1 ? 's' : ''}` : '';
+
+    if (!filtered.length) {
+      const what = activeStayType === 'House-Sit' ? 'house-sits' : 'spare rooms';
+      container.innerHTML = `<div class="no-listings"><p>No ${what} posted yet.<br>Be the first to offer one.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(l => {
+      const isSit  = normType(l[K.type]) === 'housesit';
+      const avail  = l[K.avail] || '';
+      const dates  = l[K.dates] || '';
+      const guests = l[K.guests] || '';
+      const exch   = l[K.exch] || '';
+
+      let desc = l[K.desc] || '';
+      let photos = [];
+      const photoMatch = desc.match(/\[photos:([^\]]+)\]/);
+      if (photoMatch) {
+        photos = photoMatch[1].split('|').filter(u => /^https:\/\//.test(u));
+        desc = desc.replace(/\s*\[photos:[^\]]+\]/, '').trim();
+      }
+
+      const whenLine = dates || avail;
+      const guestsLabel = guests ? `Up to ${guests} guest${guests === '1' ? '' : 's'}` : '';
+
+      return `<div class="listing-card">
+        <div class="card-top">
+          <div>
+            <div class="card-address">${esc(l[K.cross]) || 'Location on request'}</div>
+            <div class="card-neighborhood">${esc(l[K.hood])}</div>
+          </div>
+          ${l[K.type] ? `<span class="card-type-badge">${isSit ? 'House-sit' : 'Spare room'}</span>` : ''}
+        </div>
+        ${whenLine ? `<div class="card-dates">${esc(whenLine)}</div>` : ''}
+        <div class="card-meta">
+          ${avail && dates && dates.toLowerCase() !== avail.toLowerCase() ? `<span class="card-pill">${esc(avail)}</span>` : ''}
+          ${guestsLabel ? `<span class="card-pill">${esc(guestsLabel)}</span>` : ''}
+        </div>
+        ${photos.length ? `<div class="card-photos">${photos.map(p => `<img src="${esc(p)}" alt="photo" onclick="openLightbox(this.src)">`).join('')}</div>` : ''}
+        ${desc ? `<div class="card-desc">${esc(desc)}</div>` : ''}
+        ${exch ? `<div class="card-utilities">In exchange for: <span>${esc(exch)}</span></div>` : ''}
+        <div class="card-footer">
+          <div class="card-contact">Contact <strong>${esc(l[K.name])}</strong>${l[K.contact] ? ' — ' + esc(l[K.contact]) : ''}</div>
+          <span class="card-month-badge">Free stay</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function postToGoogleForm(action, params) {
+    let iframe = document.getElementById('submit-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'submit-iframe';
+      iframe.name = 'submit-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    const formEl = document.createElement('form');
+    formEl.method = 'POST';
+    formEl.action = action;
+    formEl.target = 'submit-iframe';
+    formEl.style.display = 'none';
+    for (const [key, value] of params.entries()) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      formEl.appendChild(input);
+    }
+    document.body.appendChild(formEl);
+    formEl.submit();
+    setTimeout(() => { document.body.removeChild(formEl); }, 1000);
+  }
+
+  function handleStaySubmit() {
+    const errEl = document.getElementById('stay-error-msg');
+    const avail = document.querySelector('input[name="stay-avail"]:checked')?.value || 'Specific dates';
+    const req = ['stay-neighborhood','stay-cross','stay-guests','stay-description','stay-exchange','stay-first-name','stay-contact'];
+    if (avail !== 'Flexible') req.push('stay-dates');
+    else document.getElementById('stay-dates').style.borderColor = '';
+
+    let valid = true;
+    req.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.style.borderColor = '#c0392b'; valid = false; }
+      else { el.style.borderColor = ''; }
+    });
+    const freeOk = document.getElementById('stay-free-check').checked;
+
+    if (!valid || !freeOk) {
+      errEl.textContent = !valid
+        ? 'Please fill in all required fields before submitting.'
+        : 'Please confirm the stay is free before submitting.';
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const btn = document.getElementById('stay-submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+
+    const val = id => document.getElementById(id).value.trim();
+    const photoNote = stayPhotoUrls.length ? ' [photos:' + stayPhotoUrls.join('|') + ']' : '';
+
+    const params = new URLSearchParams();
+    params.append(STAYS_ENTRY.type,     document.querySelector('input[name="stay-type"]:checked')?.value || 'House-Sit');
+    params.append(STAYS_ENTRY.hood,     val('stay-neighborhood'));
+    params.append(STAYS_ENTRY.cross,    val('stay-cross'));
+    params.append(STAYS_ENTRY.avail,    avail);
+    params.append(STAYS_ENTRY.dates,    val('stay-dates') || 'Flexible');
+    params.append(STAYS_ENTRY.guests,   val('stay-guests'));
+    params.append(STAYS_ENTRY.desc,     val('stay-description') + photoNote);
+    params.append(STAYS_ENTRY.exchange, val('stay-exchange'));
+    params.append(STAYS_ENTRY.name,     val('stay-first-name'));
+    params.append(STAYS_ENTRY.contact,  val('stay-contact'));
+
+    postToGoogleForm(STAYS_FORM_ACTION, params);
+
+    setTimeout(() => {
+      document.getElementById('stays-form').style.display = 'none';
+      document.getElementById('stay-success-msg').style.display = 'block';
+    }, 800);
   }
 
   // LIGHTBOX
@@ -593,6 +984,11 @@
       const name = this.querySelector('input').name;
       document.querySelectorAll(`.radio-chip input[name="${name}"]`).forEach(i => i.closest('.radio-chip').classList.remove('selected'));
       this.classList.add('selected');
+      if (name === 'stay-avail') {
+        const flexible = this.querySelector('input').value === 'Flexible';
+        document.getElementById('stay-dates-req').style.display = flexible ? 'none' : '';
+        document.getElementById('stay-dates').placeholder = flexible ? 'Optional — e.g. most weekends this winter' : 'e.g. Nov 8–10, or Nov 1–3 & Nov 15–17';
+      }
     });
   });
 
@@ -611,7 +1007,7 @@
     btn.disabled = true; btn.textContent = 'Submitting…';
 
     const aptType = document.querySelector('input[name="apt-type"]:checked')?.value || 'Rental';
-    const amenities = [...document.querySelectorAll('.check-item input:checked')].map(c => c.value);
+    const amenities = [...document.querySelectorAll('#main-form .check-item input:checked')].map(c => c.value);
     const params = new URLSearchParams();
     params.append('entry.1602218161', document.getElementById('available-month').value);
     params.append('entry.90151478',   document.getElementById('neighborhood').value);
