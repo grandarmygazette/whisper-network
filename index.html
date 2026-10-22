@@ -391,7 +391,7 @@
       </div>
 
       <div class="stay-note">
-        House-sits and spare rooms offered by neighbors, free of charge &mdash; no money should change hands. Grand Army Gazette points readers to the city's rules on short stays: paid stays under 30 nights in New York City are covered by short-term rental law. Learn more from the <a href="https://www.nyc.gov/site/specialenforcement" target="_blank" rel="noopener">Mayor's Office of Special Enforcement</a>, and check your lease for guest rules, too. Listings are reader-submitted and are not vetted, verified, or endorsed by Grand Army Gazette.
+        House-sits and spare rooms offered by neighbors. Stays under 30 nights in New York City may be subject to the city's short-term rental rules &mdash; before posting or arranging a stay, review them with the <a href="https://www.nyc.gov/site/specialenforcement" target="_blank" rel="noopener">Mayor's Office of Special Enforcement</a>, and check your lease for guest rules, too. Listings are reader-submitted and are not vetted, verified, or endorsed by Grand Army Gazette.
       </div>
 
       <!-- STAYS BROWSE -->
@@ -517,8 +517,6 @@
               </div>
             </div>
           </div>
-
-          <label class="free-confirm"><input type="checkbox" id="stay-free-check"> I confirm this stay is free. No payment will be requested or accepted.</label>
 
           <div class="error-msg" id="stay-error-msg"></div>
           <button class="submit-btn" id="stay-submit-btn" onclick="handleStaySubmit()">Post to the whisper network</button>
@@ -881,7 +879,6 @@
         ${exch ? `<div class="card-utilities">In exchange for: <span>${esc(exch)}</span></div>` : ''}
         <div class="card-footer">
           <div class="card-contact">Contact <strong>${esc(l[K.name])}</strong>${l[K.contact] ? ' — ' + esc(l[K.contact]) : ''}</div>
-          <span class="card-month-badge">Free stay</span>
         </div>
       </div>`;
     }).join('');
@@ -926,12 +923,8 @@
       if (!el.value.trim()) { el.style.borderColor = '#c0392b'; valid = false; }
       else { el.style.borderColor = ''; }
     });
-    const freeOk = document.getElementById('stay-free-check').checked;
-
-    if (!valid || !freeOk) {
-      errEl.textContent = !valid
-        ? 'Please fill in all required fields before submitting.'
-        : 'Please confirm the stay is free before submitting.';
+    if (!valid) {
+      errEl.textContent = 'Please fill in all required fields before submitting.';
       errEl.style.display = 'block';
       return;
     }
